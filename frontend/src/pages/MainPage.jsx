@@ -1,5 +1,11 @@
-//import { db } from "../firebase"; // (실제 firebase 설정 파일 경로에 맞게)
-//atimport { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
+import { db } from "../firebase";
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  limit,
+} from "firebase/firestore";
 
 import { useState, useEffect } from "react";
 import styled from "@emotion/styled";
@@ -12,7 +18,7 @@ import Footer from "@/components/Footer";
 import FullScreenAlert from "@/components/FullScreenAlert";
 
 // true : 목업 데이터 사용 false : Firebase 서버 연결
-const IS_MOCK_MODE = true;
+const IS_MOCK_MODE = false;
 
 // --- API 명세서 기준 목업(Mock) 데이터 건들지 마세요---
 
@@ -58,7 +64,7 @@ const mockAlertData = [
 export default function MainPage() {
   // 초기화 값 : null (꺼짐)
   const [currentAlert, setCurrentAlert] = useState(null);
-  const [alertList, setAlertList] = useState(mockAlertData);
+  const [alertList, setAlertList] = useState(IS_MOCK_MODE ? mockAlertData : []);
 
   useEffect(() => {
     // 💡 스위치가 true(목업 모드)일 때는 서버 연결 코드를 무시하고 빠져나갑니다.
@@ -67,20 +73,66 @@ export default function MainPage() {
       return;
     }
 
-    // --- 👇 여기서부터는 IS_MOCK_MODE가 false일 때만 실행됩니다 (실제 서버 연동) ---
-    /*
-    const q = query(collection(db, "alarms"), orderBy("timestamp", "desc"), limit(1));
+    // --- 👇 Firebase 연동 (화면 렌더링 + 로그 동시 확인) ---
+
+    // time을 기준으로 최신순 정렬
+    const q = query(
+      collection(db, "alarms"),
+      orderBy("time", "desc"),
+      limit(1),
+    );
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
-          const newAlertData = change.doc.data();
-          setCurrentAlert(newAlertData);
-          setAlertList((prev) => [newAlertData, ...prev]);
+          // 파이어베이스에서 막 도착한 순수 원본 데이터
+          const serverData = change.doc.data();
+
+          // 🚨 F12 관리자 모드 콘솔창에 데이터 찍기
+          console.log("====================================");
+          console.log("📡 [서버 원본 데이터 수신] :", serverData);
+          console.log("====================================");
+
+          let displayTime = "시간 오류";
+          if (serverData.time) {
+            let dateObj;
+
+            if (serverData.time.toDate) {
+              dateObj = serverData.time.toDate();
+            } else if (typeof serverData.time === "number") {
+              dateObj = new Date(
+                serverData.time.toString().length === 10
+                  ? serverData.time * 1000
+                  : serverData.time,
+              );
+            }
+
+            if (dateObj) {
+              displayTime = dateObj.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+            }
+          }
+
+          const finalAlertData = {
+            id: serverData.id || change.doc.id,
+            time: displayTime,
+            location: serverData.location,
+            sound: serverData.sound,
+            type: serverData.type,
+          };
+
+          console.log("🛠️ [UI 변환 결과 프리뷰] :", finalAlertData);
+
+          // 💡 화면 렌더링 실행: 주석을 해제하여 콘솔 로그 출력과 함께 화면 팝업도 띄웁니다.
+          setCurrentAlert(finalAlertData);
+          setAlertList((prev) => [finalAlertData, ...prev]);
         }
       });
     });
+
     return () => unsubscribe();
-    */
   }, []);
 
   return (
