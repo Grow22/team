@@ -12,13 +12,12 @@ import styled from "@emotion/styled";
 import TopHeader from "@/components/TopHeader";
 import AlertCard from "@/components/AlertCard";
 import Notification from "@/components/Notification";
-import AllConnect from "@/components/AllConnect";
 import Room from "@/components/Room";
 import Footer from "@/components/Footer";
 import FullScreenAlert from "@/components/FullScreenAlert";
 
 // true : 목업 데이터 사용 false : Firebase 서버 연결
-const IS_MOCK_MODE = false;
+const IS_MOCK_MODE = true;
 
 // --- API 명세서 기준 목업(Mock) 데이터 건들지 마세요---
 
@@ -58,6 +57,13 @@ const mockAlertData = [
     location: "화장실",
     sound: "세탁 완료",
     type: "Appliance", // 노랑 (생활 기기)
+  },
+  {
+    id: 4,
+    time: "14:22 AM",
+    location: "현관",
+    sound: "아기 울음",
+    type: "Noise", // 노랑 (생활 기기)
   },
 ];
 
@@ -145,8 +151,6 @@ export default function MainPage() {
         />
       </Header>
 
-      <AllConnect />
-
       <DivideConnect>
         <Title>
           <Text>💡기기 연결 상태</Text>
@@ -174,19 +178,25 @@ export default function MainPage() {
               onClick={() => setCurrentAlert(mockAlertData[0])}
               style={{ background: "#2563eb" }}
             >
-              👤 방문자
+              방문
             </TestButton>
             <TestButton
               onClick={() => setCurrentAlert(mockAlertData[1])}
               style={{ background: "#dc2626" }}
             >
-              🚨 긴급
+              긴급
             </TestButton>
             <TestButton
               onClick={() => setCurrentAlert(mockAlertData[2])}
               style={{ background: "#82E21A", color: "#000" }}
             >
-              🧺 기기
+              기기
+            </TestButton>
+            <TestButton
+              onClick={() => setCurrentAlert(mockAlertData[3])}
+              style={{ background: "#F2B50B", color: "#000" }}
+            >
+              소음
             </TestButton>
           </div>
         )}
