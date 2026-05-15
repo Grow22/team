@@ -17,14 +17,14 @@ import Footer from "@/components/Footer";
 import FullScreenAlert from "@/components/FullScreenAlert";
 
 // true : 목업 데이터 사용 false : Firebase 서버 연결
-const IS_MOCK_MODE = true;
+const IS_MOCK_MODE = false;
 
 // --- API 명세서 기준 목업(Mock) 데이터 건들지 마세요---
 
 // 1. 유저 정보 데이터 (TopHeader & Notification 영역)
 const mockUserInfo = {
   userName: "홍한희",
-  unreadCount: 2,
+  unreadCount: 3,
 };
 
 // 2. 기기 연결 상태 데이터 (DivideConnect 영역)
@@ -39,28 +39,28 @@ const mockDeviceData = [
 const mockAlertData = [
   {
     id: 1,
-    time: "10:23 AM",
+    time: "오전 08:00",
     location: "현관",
     sound: "현관문 열림",
     type: "Visitor", // 파랑 (방문자)
   },
   {
     id: 2,
-    time: "09:15 AM",
+    time: "오전 09:15",
     location: "주방",
     sound: "화재 경보기",
     type: "Urgent", // 빨강 (긴급, 화재)
   },
   {
     id: 3,
-    time: "08:00 AM",
+    time: "오전 10:23",
     location: "화장실",
     sound: "세탁 완료",
     type: "Appliance", // 노랑 (생활 기기)
   },
   {
     id: 4,
-    time: "14:22 AM",
+    time: "오후 02:22",
     location: "현관",
     sound: "아기 울음",
     type: "Noise", // 노랑 (생활 기기)
@@ -114,7 +114,7 @@ export default function MainPage() {
             }
 
             if (dateObj) {
-              displayTime = dateObj.toLocaleTimeString("en-US", {
+              displayTime = dateObj.toLocaleTimeString("ko-KR", {
                 hour: "2-digit",
                 minute: "2-digit",
               });
@@ -144,33 +144,44 @@ export default function MainPage() {
   return (
     <Container>
       <Header>
-        <TopHeader />
-        <Notification
-          userName={mockUserInfo.userName}
-          unreadCount={mockUserInfo.unreadCount}
-        />
+        <TopHeader userName={mockUserInfo.userName} />
+        <Notification unreadCount={mockUserInfo.unreadCount} />
       </Header>
+      <Contents>
+        <DivideConnect>
+          <Title>
+            <Text>기기 연결 상태</Text>
+          </Title>
 
-      <DivideConnect>
-        <Title>
-          <Text>💡기기 연결 상태</Text>
-        </Title>
+          <GridContainer>
+            {mockDeviceData.map((device, index) => (
+              <Room
+                key={index}
+                name={device.name}
+                isConnected={device.isConnected}
+              />
+            ))}
+          </GridContainer>
+        </DivideConnect>
 
-        <GridContainer>
-          {mockDeviceData.map((device, index) => (
-            <Room
-              key={index}
-              name={device.name}
-              isConnected={device.isConnected}
-            />
-          ))}
-        </GridContainer>
-      </DivideConnect>
+        <SoundAlarm>
+          <Title>
+            <Text>실시간 소리 알림</Text>
+          </Title>
 
-      <SoundAlarm>
-        <Title>
-          <Text>🔈실시간 소리 알림</Text>
-        </Title>
+          <AlertList>
+            {/* 💡 수정됨: mockAlertData 대신 상태(State)인 alertList를 사용하여 렌더링 */}
+            {alertList.map((alert) => (
+              <AlertCard
+                key={alert.id}
+                time={alert.time}
+                location={alert.location}
+                sound={alert.sound}
+                type={alert.type}
+              />
+            ))}
+          </AlertList>
+        </SoundAlarm>
         {/* 💡 조건부 렌더링: 스위치가 true일 때만 개발자용 테스트 버튼들을 화면에 보여줍니다 */}
         {IS_MOCK_MODE && (
           <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
@@ -200,20 +211,7 @@ export default function MainPage() {
             </TestButton>
           </div>
         )}
-        <AlertList>
-          {/* 💡 수정됨: mockAlertData 대신 상태(State)인 alertList를 사용하여 렌더링 */}
-          {alertList.map((alert) => (
-            <AlertCard
-              key={alert.id}
-              time={alert.time}
-              location={alert.location}
-              sound={alert.sound}
-              type={alert.type}
-            />
-          ))}
-        </AlertList>
-      </SoundAlarm>
-
+      </Contents>
       <Footer />
       {currentAlert && (
         <FullScreenAlert
@@ -224,26 +222,28 @@ export default function MainPage() {
     </Container>
   );
 }
-
 const Container = styled.div`
-  background-color: #f8f8f8;
-  padding-bottom: 100px;
+  background-color: #41444b;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 `;
 const DivideConnect = styled.div`
   padding: 28px 20px;
 `;
 const Header = styled.div`
-  background-color: #52575d;
   padding: 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  background-color: #41444b;
 `;
 const Title = styled.div``;
 const Text = styled.p`
   font-size: 28px;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
+  color: #41444b;
 `;
 const GridContainer = styled.div`
   display: grid;
@@ -275,4 +275,14 @@ const TestButton = styled.button`
   display: flex;
   justify-content: center;
   align-items: center;
+`;
+
+const Contents = styled.div`
+  background-color: #f8f8f8;
+  border-radius: 32px 32px 0 0;
+  padding-top: 20px;
+  min-height: calc(100vh - 250px);
+
+  flex: 1;
+  padding-bottom: 100px;
 `;
